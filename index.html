@@ -1,144 +1,80 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
-    <title>Dang Khoi Dep Trai No 1 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Phi Công</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            padding: 50px;
-        }
-        
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-        
-        .option-btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            cursor: pointer;
-            border-radius: 8px;
-            font-size: 16px;
-            background: white;
-            transition: 0.2s;
-        }
-        
-        .option-btn:hover {
-            background: #f0f0f0;
-        }
-        
-        input {
-            padding: 10px;
-            width: 80%;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        
-        .correct {
-            background-color: #2ecc71 !important;
-            color: white;
-            border-color: #27ae60;
-            pointer-events: none;
-        }
-        
-        .wrong {
-            background-color: #e74c3c !important;
-            color: white;
-            border-color: #c0392b;
-            pointer-events: none;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 40px; box-shadow: 0 6px 15px rgba(0,0,0,0.15); width: 100%; max-width: 600px; text-align: center; border-radius: 0; }
+        @media (min-width: 600px) { .container { border-radius: 16px; margin: 20px; } }
+        .option-btn { display: block; width: 100%; padding: 20px; margin: 15px 0; border: 2px solid #ddd; cursor: pointer; border-radius: 12px; font-size: 20px; font-weight: 600; background: white; transition: 0.2s; }
+        .option-btn:hover { background: #f0f0f0; }
+        .settings { margin-bottom: 20px; font-size: 18px; }
+        .correct { background-color: #2ecc71 !important; color: white; border-color: #27ae60; pointer-events: none; }
+        .wrong { background-color: #e74c3c !important; color: white; border-color: #c0392b; pointer-events: none; }
+        input { padding: 15px; width: 90%; margin-bottom: 20px; border-radius: 8px; border: 2px solid #ccc; font-size: 18px; box-sizing: border-box; }
     </style>
 </head>
-
 <body>
 
-    <div class="container" id="app">
-        <div id="setup-screen">
-            <h2>Thiết lập bài học</h2>
-            <input type="number" id="start" placeholder="Từ (ID)">
-            <input type="number" id="end" placeholder="Đến (ID)">
-            <button class="option-btn" style="background:#27ae60; color:white;" onclick="startQuiz()">Bắt đầu học</button>
+<audio id="sound-correct" src="correct.mp3"></audio>
+<audio id="sound-wrong" src="wrong.mp3"></audio>
+
+<div class="container" id="app">
+    <div id="setup-screen">
+        <h2>Thiết lập bài học</h2>
+        <div class="settings">
+            <label><input type="checkbox" id="soundToggle" checked> Bật âm thanh</label>
         </div>
+        <input type="number" id="start" placeholder="Từ (ID)">
+        <input type="number" id="end" placeholder="Đến (ID)">
+        <button class="option-btn" style="background:#27ae60; color:white;" onclick="startQuiz()">Bắt đầu học</button>
     </div>
+</div>
 
-    <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2agRGf989njIz6Tuzr_oTWxIZFBF4z3ohlsXG3_fH8gAMtB0ITw_wY-BTLOVk1knW4UX9D_S0uu_f/pub?gid=0&single=true&output=csv";
-        let allData = [],
-            quizData = [],
-            currentIndex = 0,
-            score = 0;
+<script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2agRGf989njIz6Tuzr_oTWxIZFBF4z3ohlsXG3_fH8gAMtB0ITw_wY-BTLOVk1knW4UX9D_S0uu_f/pub?gid=0&single=true&output=csv";
+    let allData = [], quizData = [], currentIndex = 0, score = 0;
 
-        Papa.parse(CSV_URL, {
-            download: true,
-            header: true,
-            complete: (results) => {
-                allData = results.data.filter(i => i.id).map(i => ({
-                    id: parseInt(i.id),
-                    word: i.word,
-                    correct: i.correct,
-                    wrong: i.wrong.split(',')
-                }));
-            }
+    Papa.parse(CSV_URL, { download: true, header: true, complete: (results) => { allData = results.data.filter(i => i.id).map(i => ({ id: parseInt(i.id), word: i.word, correct: i.correct, wrong: i.wrong.split(',') })); } });
+
+    function playSound(isCorrect) {
+        if (!document.getElementById("soundToggle").checked) return;
+        const sound = document.getElementById(isCorrect ? "sound-correct" : "sound-wrong");
+        sound.currentTime = 0; // Reset âm thanh về đầu
+        sound.play().catch(e => console.log("Cần click vào trang để kích hoạt âm thanh"));
+    }
+
+    function startQuiz() {
+        const start = parseInt(document.getElementById("start").value);
+        const end = parseInt(document.getElementById("end").value);
+        quizData = allData.filter(i => i.id >= start && i.id <= end);
+        if (quizData.length === 0) return alert("Không có dữ liệu!");
+        currentIndex = 0; score = 0; showQuestion();
+    }
+
+    function showQuestion() {
+        const q = quizData[currentIndex];
+        document.getElementById("app").innerHTML = `<h3>"${q.word}" nghĩa là gì?</h3><div id="options-box"></div>`;
+        [...q.wrong, q.correct].sort(() => 0.5 - Math.random()).forEach(opt => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn"; btn.innerText = opt;
+            btn.onclick = () => {
+                document.querySelectorAll('.option-btn').forEach(b => { b.disabled = true; b.style.pointerEvents = "none"; });
+                const isCorrect = (opt === q.correct);
+                playSound(isCorrect);
+                if(isCorrect) { btn.classList.add("correct"); score++; } else btn.classList.add("wrong");
+                
+                const nextBtn = document.createElement("button");
+                nextBtn.innerText = "Tiếp theo"; nextBtn.className = "option-btn"; nextBtn.style.background = "#3498db"; nextBtn.style.color = "white";
+                nextBtn.onclick = () => { currentIndex++; currentIndex < quizData.length ? showQuestion() : (document.getElementById("app").innerHTML = `<h2>Kết quả: ${score}/${quizData.length}</h2><button class="option-btn" onclick="location.reload()">Làm lại</button>`); };
+                document.getElementById("app").appendChild(nextBtn);
+            };
+            document.getElementById("options-box").appendChild(btn);
         });
-
-        function startQuiz() {
-            const start = parseInt(document.getElementById("start").value);
-            const end = parseInt(document.getElementById("end").value);
-            quizData = allData.filter(i => i.id >= start && i.id <= end);
-
-            if (quizData.length === 0) return alert("Không có dữ liệu trong dải ID này!");
-            currentIndex = 0;
-            score = 0;
-            showQuestion();
-        }
-
-        function showQuestion() {
-            const q = quizData[currentIndex];
-            document.getElementById("app").innerHTML = `<h3>"${q.word}" nghĩa là gì?</h3><div id="options-box"></div>`;
-            [...q.wrong, q.correct].sort(() => 0.5 - Math.random()).forEach(opt => {
-                const btn = document.createElement("button");
-                btn.className = "option-btn";
-                btn.innerText = opt;
-                btn.onclick = () => {
-                    document.querySelectorAll('.option-btn').forEach(b => {
-                        b.disabled = true;
-                        b.style.pointerEvents = "none";
-                    });
-                    if (opt === q.correct) {
-                        btn.classList.add("correct");
-                        score++;
-                    } else btn.classList.add("wrong");
-
-                    const nextBtn = document.createElement("button");
-                    nextBtn.innerText = "Tiếp theo";
-                    nextBtn.className = "option-btn";
-                    nextBtn.style.background = "#3498db";
-                    nextBtn.style.color = "white";
-                    nextBtn.onclick = () => {
-                        currentIndex++;
-                        currentIndex < quizData.length ? showQuestion() : (document.getElementById("app").innerHTML = `<h2>Kết quả: ${score}/${quizData.length}</h2><button class="option-btn" onclick="location.reload()">Làm lại</button>`);
-                    };
-                    document.getElementById("app").appendChild(nextBtn);
-                };
-                document.getElementById("options-box").appendChild(btn);
-            });
-        }
-    </script>
+    }
+</script>
 </body>
-
 </html>
