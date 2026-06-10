@@ -6,61 +6,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dang Khoi Dep Trai No 1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
+         :root {
+            --bg: #0f172a;
+            --glass: rgba(30, 41, 59, 0.7);
+            --primary: #6366f1;
+        }
+        
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f4f7f6;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            color: white;
             margin: 0;
-            padding: 0;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
         }
         
         .container {
-            background: white;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
             padding: 40px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 600px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
             text-align: center;
-            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .option-btn {
             display: block;
             width: 100%;
-            padding: 20px;
+            padding: 18px;
             margin: 15px 0;
-            border: 2px solid #ddd;
+            border: none;
             cursor: pointer;
-            border-radius: 12px;
-            font-size: 20px;
+            border-radius: 14px;
+            font-size: 18px;
             font-weight: 600;
-            background: white;
-            transition: 0.2s;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            transition: 0.3s;
         }
         
         .option-btn:hover {
-            background: #f0f0f0;
-        }
-        /* Cài đặt nút gạt âm thanh */
-        
-        .settings-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
         }
         
         .sound-control {
             display: flex;
+            justify-content: center;
             align-items: center;
             gap: 15px;
-            padding: 10px 20px;
-            background: #f8f9fa;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
             border-radius: 50px;
-            border: 1px solid #e0e0e0;
         }
         
         .switch {
@@ -83,76 +88,52 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: #334155;
             transition: .4s;
             border-radius: 34px;
         }
         
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
         input:checked+.slider {
-            background-color: #2ecc71;
-        }
-        
-        input:checked+.slider:before {
-            transform: translateX(24px);
+            background-color: #22c55e;
         }
         
         .correct {
-            background-color: #2ecc71 !important;
-            color: white;
-            border-color: #27ae60;
-            pointer-events: none;
+            background: #22c55e !important;
+            box-shadow: 0 0 15px #22c55e;
         }
         
         .wrong {
-            background-color: #e74c3c !important;
-            color: white;
-            border-color: #c0392b;
-            pointer-events: none;
+            background: #ef4444 !important;
+            box-shadow: 0 0 15px #ef4444;
         }
         
         input[type="number"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 15px;
-            width: 90%;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border: 2px solid #ccc;
-            font-size: 18px;
+            color: white;
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 12px;
             box-sizing: border-box;
         }
     </style>
 </head>
 
 <body>
-
     <div class="container">
-        <div class="settings-container">
-            <div class="sound-control">
-                <span>🔊 Âm thanh</span>
-                <label class="switch">
+        <div class="sound-control">
+            <span>🔊 Âm thanh</span>
+            <label class="switch">
                 <input type="checkbox" id="soundToggle" checked>
                 <span class="slider"></span>
             </label>
-            </div>
         </div>
         <div id="app">
-            <div id="setup-screen">
-                <h2>Thiết lập bài học</h2>
-                <input type="number" id="start" placeholder="Từ (ID)">
-                <input type="number" id="end" placeholder="Đến (ID)">
-                <button class="option-btn" style="background:#27ae60; color:white;" onclick="startQuiz()">Bắt đầu học</button>
-            </div>
+            <h2>Thiết lập bài học</h2>
+            <input type="number" id="start" placeholder="Từ (ID)">
+            <input type="number" id="end" placeholder="Đến (ID)">
+            <button class="option-btn" onclick="startQuiz()">Bắt đầu học</button>
         </div>
     </div>
 
@@ -169,8 +150,8 @@
         Papa.parse(CSV_URL, {
             download: true,
             header: true,
-            complete: (results) => {
-                allData = results.data.filter(i => i.id);
+            complete: (res) => {
+                allData = res.data.filter(i => i.id);
             }
         });
 
@@ -179,7 +160,7 @@
             const sound = document.getElementById(isCorrect ? "sound-correct" : "sound-wrong");
             if (sound) {
                 sound.currentTime = 0;
-                sound.play().catch(e => console.log("Âm thanh bị chặn"));
+                sound.play();
             }
         }
 
@@ -200,22 +181,16 @@
                 btn.className = "option-btn";
                 btn.innerText = opt;
                 btn.onclick = () => {
-                    document.querySelectorAll('.option-btn').forEach(b => {
-                        b.disabled = true;
-                        b.style.pointerEvents = "none";
-                    });
                     const isCorrect = (opt === q.correct);
                     playSound(isCorrect);
-                    if (isCorrect) {
-                        btn.classList.add("correct");
-                        score++;
-                    } else btn.classList.add("wrong");
+                    btn.classList.add(isCorrect ? "correct" : "wrong");
+                    document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents = "none");
+                    if (isCorrect) score++;
 
                     const nextBtn = document.createElement("button");
                     nextBtn.innerText = "Tiếp theo";
                     nextBtn.className = "option-btn";
-                    nextBtn.style.background = "#3498db";
-                    nextBtn.style.color = "white";
+                    nextBtn.style.background = "#6366f1";
                     nextBtn.onclick = () => {
                         currentIndex++;
                         currentIndex < quizData.length ? showQuestion() : (document.getElementById("app").innerHTML = `<h2>Kết quả: ${score}/${quizData.length}</h2><button class="option-btn" onclick="location.reload()">Làm lại</button>`);
